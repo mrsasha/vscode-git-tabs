@@ -18,21 +18,51 @@ export function activate(context: vscode.ExtensionContext) {
       `Howdy from git-tabs, using root: ${workspaceRoot}!`
     );
   });
+  context.subscriptions.push(disposable);
 
   statusBar = createStatusBar();
+  context.subscriptions.push(statusBar);
 
   //events
-  //   vscode.window.onDidChangeActiveTextEditor(OnStatusBarUpdate);
-  vscode.workspace.onDidChangeConfiguration(() =>
+  let disposableChangeConfig = vscode.workspace.onDidChangeConfiguration(() =>
     checkGitStatus(currentRepoPath)
   );
-  vscode.workspace.onDidSaveTextDocument(() => checkGitStatus(currentRepoPath));
-  vscode.workspace.onDidCreateFiles(() => checkGitStatus(currentRepoPath));
-  vscode.workspace.onDidDeleteFiles(() => checkGitStatus(currentRepoPath));
-  vscode.workspace.onDidRenameFiles(() => checkGitStatus(currentRepoPath));
+  context.subscriptions.push(disposableChangeConfig);
 
-  context.subscriptions.push(disposable);
-  context.subscriptions.push(statusBar);
+  let disposableOpen = vscode.workspace.onDidOpenTextDocument(() =>
+    checkGitStatus(currentRepoPath)
+  );
+  context.subscriptions.push(disposableOpen);
+
+  let disposableChangeText = vscode.workspace.onDidChangeTextDocument(() =>
+    checkGitStatus(currentRepoPath)
+  );
+  context.subscriptions.push(disposableChangeText);
+
+  let disposableSaveText = vscode.workspace.onDidSaveTextDocument(() =>
+    checkGitStatus(currentRepoPath)
+  );
+  context.subscriptions.push(disposableSaveText);
+
+  let disposableCreateFiles = vscode.workspace.onDidCreateFiles(() =>
+    checkGitStatus(currentRepoPath)
+  );
+  context.subscriptions.push(disposableCreateFiles);
+
+  let disposableDeleteFiles = vscode.workspace.onDidDeleteFiles(() =>
+    checkGitStatus(currentRepoPath)
+  );
+  context.subscriptions.push(disposableDeleteFiles);
+
+  let disposableRenameFiles = vscode.workspace.onDidRenameFiles(() =>
+    checkGitStatus(currentRepoPath)
+  );
+  context.subscriptions.push(disposableRenameFiles);
+
+  let disposableChangeEditor = vscode.window.onDidChangeActiveTextEditor(() =>
+    checkGitStatus(currentRepoPath)
+  );
+  context.subscriptions.push(disposableChangeEditor);
 
   lookupRepo(workspaceRoot);
 }
@@ -57,22 +87,28 @@ function checkGitStatus(repoDir: string | undefined) {
     .status()
     .then((statusResult: StatusResult) => {
       console.log(`Got git status: ${JSON.stringify(statusResult)}`);
-      showStatusInStatusBar(statusResult, repoDir);
+      showStatusInStatusBar(statusResult);
+      updateEditorTabs(statusResult);
     })
     .catch((err) => {
       console.error(`Error getting git status: ${err}`);
     });
 }
 
-function showStatusInStatusBar(statusResult: StatusResult, repoDir: string) {
-  console.log(
-    `Modified: ${statusResult.modified.length}, Not added: ${statusResult.not_added}`
-  );
+function showStatusInStatusBar(statusResult: StatusResult) {
+  console.log(`Updating status bar`);
 
   if (statusBar) {
     statusBar.text = `Git branch: ${statusResult.current} -- CHG: ${statusResult.modified.length}, ADD: ${statusResult.not_added.length}, DEL: ${statusResult.deleted.length}`;
     statusBar.show();
   }
+}
+
+function updateEditorTabs(statusResult: StatusResult) {
+  console.log(`Updating editor tabs`);
+
+  const editors = vscode.window.visibleTextEditors;
+  editors[0].document;
 }
 
 function lookupRepo(repoDir: string) {
