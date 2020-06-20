@@ -1,27 +1,66 @@
-// The module 'vscode' contains the VS Code extensibility API
-// Import the module and reference it with the alias vscode in your code below
-import * as vscode from 'vscode';
+import * as vscode from "vscode";
+import { workspace, ExtensionContext, StatusBarAlignment } from "vscode";
+import path = require("path");
+import simpleGit, { SimpleGit, StatusResult } from "simple-git";
 
-// this method is called when your extension is activated
-// your extension is activated the very first time the command is executed
-export function activate(context: vscode.ExtensionContext) {
+export function activate(context: vscode.ExtensionContext) {  
+  // Workspace not using a folder. No access to git repo.
+  if (!workspace.rootPath) {
+    return;
+  }
 
-	// Use the console to output diagnostic information (console.log) and errors (console.error)
-	// This line of code will only be executed once when your extension is activated
-	console.log('Congratulations, your extension "git-tabs" is now active!');
+  const workspaceRoot = workspace.rootPath;
+  let disposable = vscode.commands.registerCommand("git-tabs.showgit", () => {
+    // Display a message box to the user
+    vscode.window.showErrorMessage(
+      `Hello World from git-tabs, using root: ${workspaceRoot}!`
+    );
+  });
 
-	// The command has been defined in the package.json file
-	// Now provide the implementation of the command with registerCommand
-	// The commandId parameter must match the command field in package.json
-	let disposable = vscode.commands.registerCommand('git-tabs.helloWorld', () => {
-		// The code you place here will be executed every time your command is executed
+  context.subscriptions.push(disposable);
 
-		// Display a message box to the user
-		vscode.window.showErrorMessage('Hello World from git-tabs!');
-	});
-
-	context.subscriptions.push(disposable);
+  lookupRepo(context, workspaceRoot);
 }
 
 // this method is called when your extension is deactivated
 export function deactivate() {}
+
+function lookupRepo(context: ExtensionContext, repoDir: string) {
+  const repoPath = path.join(repoDir, ".git");
+  const fs = require("fs");
+
+  fs.access(repoPath, (err: any) => {
+    if (err) {
+      // No access to git repo or no repo, try to go up.
+      const parentDir = path.dirname(repoDir);
+      if (parentDir != repoDir) {
+        lookupRepo(context, parentDir);
+      }
+    } else {
+      const git: SimpleGit = simpleGit(repoDir);
+
+      const status = git
+        .status()
+        .then((statusResult: StatusResult) => {
+			checkStatus(statusResult);
+        })
+        .catch((err) => {
+          console.error(`Error getting git status: ${err}`);
+        });
+    }
+  });
+
+  function checkStatus(statusResult: StatusResult) {
+    console.log(`Got git status: ${JSON.stringify(statusResult)}`);
+    const modified = statusResult.modified;
+    console.log(
+      `Modified files: ${JSON.stringify(modified)}, number: ${modified.length}`
+    );
+
+    const statusBar = vscode.window.createStatusBarItem(
+      StatusBarAlignment.Left
+    );
+    statusBar.text = `modified files in ${repoDir}: ${modified.length}`;
+    statusBar.show();
+  }
+}
