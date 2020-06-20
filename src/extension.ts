@@ -26,44 +26,22 @@ export function activate(context: vscode.ExtensionContext) {
   context.subscriptions.push(statusBar);
 
   //events
-  let disposableChangeConfig = vscode.workspace.onDidChangeConfiguration(() =>
-    checkGitStatus(currentRepoPath)
-  );
+  let disposableChangeConfig = vscode.workspace.onDidChangeConfiguration(() => {
+    console.log(`onDidChangeConfiguration`);
+    checkGitStatus(currentRepoPath, true);
+  });
   context.subscriptions.push(disposableChangeConfig);
 
-  let disposableOpen = vscode.workspace.onDidOpenTextDocument(() =>
-    checkGitStatus(currentRepoPath)
-  );
-  context.subscriptions.push(disposableOpen);
-
-  let disposableChangeText = vscode.workspace.onDidChangeTextDocument(() =>
-    checkGitStatus(currentRepoPath)
-  );
+  let disposableChangeText = vscode.workspace.onDidChangeTextDocument(() => {
+    console.log(`onDidChangeTextDocument`);
+    checkGitStatus(currentRepoPath, true);
+  });
   context.subscriptions.push(disposableChangeText);
 
-  let disposableSaveText = vscode.workspace.onDidSaveTextDocument(() =>
-    checkGitStatus(currentRepoPath)
-  );
-  context.subscriptions.push(disposableSaveText);
-
-  let disposableCreateFiles = vscode.workspace.onDidCreateFiles(() =>
-    checkGitStatus(currentRepoPath)
-  );
-  context.subscriptions.push(disposableCreateFiles);
-
-  let disposableDeleteFiles = vscode.workspace.onDidDeleteFiles(() =>
-    checkGitStatus(currentRepoPath)
-  );
-  context.subscriptions.push(disposableDeleteFiles);
-
-  let disposableRenameFiles = vscode.workspace.onDidRenameFiles(() =>
-    checkGitStatus(currentRepoPath)
-  );
-  context.subscriptions.push(disposableRenameFiles);
-
-  let disposableChangeEditor = vscode.window.onDidChangeActiveTextEditor(() =>
-    checkGitStatus(currentRepoPath, true)
-  );
+  let disposableChangeEditor = vscode.window.onDidChangeActiveTextEditor(() => {
+    console.log(`onDidChangeActiveTextEditor`);
+    checkGitStatus(currentRepoPath, true);
+  });
   context.subscriptions.push(disposableChangeEditor);
 
   lookupRepo(workspaceRoot);
