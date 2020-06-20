@@ -5,6 +5,13 @@ type ColorCustomization = { [key: string]: string | undefined } | undefined;
 
 const COLOR_CUSTOMIZATIONS = "colorCustomizations";
 
+const defaultFileColor = "#FFFFFF";
+const defaultAddedFileColor = "#6FC2E9";
+const defaultConflictingFileColor = "#E51400";
+const defaultDeletedFileColor = "68217A";
+const defaultModifiedFileColor = "#E5C365";
+const defaultUntrackedFileColor = "#35CE8D";
+
 const invertHex = (hex?: string) => {
   if (!hex) {
     return;
@@ -15,18 +22,9 @@ const invertHex = (hex?: string) => {
 
 export function getColor(fileStatus: FileSCMStatus): string {
   const settings = vscode.workspace.getConfiguration("workbench");
-  console.log(`settings: ${JSON.stringify(settings)}`);
 
   const currentColorCustomization: ColorCustomization =
     settings.get(COLOR_CUSTOMIZATIONS) || {};
-
-  const defaultFileColor = "#FFFFFF";
-  const defaultAddedFileColor = "#6FC2E9";
-  const defaultConflictingFileColor = "#E51400";
-  const defaultDeletedFileColor = "68217A";
-  const defaultIgnoredFileColor = "#9C9C9C";
-  const defaultModifiedFileColor = "#E5C365";
-  const defaultUntrackedFileColor = "#007ACC";
 
   const addedFileColor =
     currentColorCustomization["gitDecoration.addedResourceForeground"];
@@ -34,8 +32,6 @@ export function getColor(fileStatus: FileSCMStatus): string {
     currentColorCustomization["gitDecoration.conflictingResourceForeground"];
   const deletedFileColor =
     currentColorCustomization["gitDecoration.deletedResourceForeground"];
-  const ignoredFileColor =
-    currentColorCustomization["gitDecoration.ignoredResourceForeground"];
   const modifiedFileColor =
     currentColorCustomization["gitDecoration.modifiedResourceForeground"];
   const untrackedFileColor =
@@ -50,8 +46,6 @@ export function getColor(fileStatus: FileSCMStatus): string {
         : defaultConflictingFileColor;
     case FileSCMStatus.DELETED:
       return deletedFileColor ? deletedFileColor : defaultDeletedFileColor;
-    case FileSCMStatus.IGNORED:
-      return ignoredFileColor ? ignoredFileColor : defaultIgnoredFileColor;
     case FileSCMStatus.MODIFIED:
       return modifiedFileColor ? modifiedFileColor : defaultModifiedFileColor;
     case FileSCMStatus.UNTRACKED:

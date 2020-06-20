@@ -60,7 +60,6 @@ function createStatusBar() {
 }
 
 function checkGitStatus(repoDir: string | undefined, updateTabs?: boolean) {
-  console.log(`Checking status for: ${repoDir}`);
   if (repoDir === undefined) return;
 
   const status = simpleGit(repoDir)
@@ -107,6 +106,8 @@ async function updateEditorTabs(statusResult: StatusResult) {
 }
 
 function lookupRepo(repoDir: string) {
+  console.log(`lookupRepo for ${repoDir}`);
+
   const repoPath = path.join(repoDir, ".git");
   const fs = require("fs");
 
