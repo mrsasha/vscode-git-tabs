@@ -2,6 +2,7 @@ import * as vscode from "vscode";
 import { workspace, ExtensionContext, StatusBarAlignment } from "vscode";
 import path = require("path");
 import simpleGit, { SimpleGit, StatusResult } from "simple-git";
+import { getFileStatus } from "./fileops";
 
 let statusBar: vscode.StatusBarItem;
 let currentRepoPath: string | undefined;
@@ -60,7 +61,7 @@ export function activate(context: vscode.ExtensionContext) {
   context.subscriptions.push(disposableRenameFiles);
 
   let disposableChangeEditor = vscode.window.onDidChangeActiveTextEditor(() =>
-    checkGitStatus(currentRepoPath)
+    checkGitStatus(currentRepoPath, true)
   );
   context.subscriptions.push(disposableChangeEditor);
 
@@ -79,7 +80,7 @@ function createStatusBar() {
   return sb;
 }
 
-function checkGitStatus(repoDir: string | undefined) {
+function checkGitStatus(repoDir: string | undefined, updateTabs?: boolean) {
   console.log(`Checking status for: ${repoDir}`);
   if (repoDir === undefined) return;
 
@@ -88,7 +89,10 @@ function checkGitStatus(repoDir: string | undefined) {
     .then((statusResult: StatusResult) => {
       console.log(`Got git status: ${JSON.stringify(statusResult)}`);
       showStatusInStatusBar(statusResult);
-      updateEditorTabs(statusResult);
+
+      if (updateTabs) {
+        updateEditorTabs(statusResult);
+      }
     })
     .catch((err) => {
       console.error(`Error getting git status: ${err}`);
@@ -104,11 +108,18 @@ function showStatusInStatusBar(statusResult: StatusResult) {
   }
 }
 
-function updateEditorTabs(statusResult: StatusResult) {
+async function updateEditorTabs(statusResult: StatusResult) {
   console.log(`Updating editor tabs`);
 
-  const editors = vscode.window.visibleTextEditors;
-  editors[0].document;
+  const editor = vscode.window.activeTextEditor;
+  if (!editor) return;
+
+  const openFilePath = vscode.workspace.asRelativePath(
+    editor.document.fileName
+  );
+
+  const fileStatus = getFileStatus(openFilePath, statusResult);
+  //TODO change colors in config
 }
 
 function lookupRepo(repoDir: string) {
@@ -127,7 +138,7 @@ function lookupRepo(repoDir: string) {
     } else {
       console.log(`Setting currentRepoPath to: ${repoDir}`);
       currentRepoPath = repoDir;
-      checkGitStatus(currentRepoPath);
+      checkGitStatus(currentRepoPath, true);
     }
   });
 }
