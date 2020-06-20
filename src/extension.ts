@@ -21,6 +21,16 @@ export function activate(context: vscode.ExtensionContext) {
 
   statusBar = createStatusBar();
 
+  //events
+  //   vscode.window.onDidChangeActiveTextEditor(OnStatusBarUpdate);
+  vscode.workspace.onDidChangeConfiguration(() =>
+    checkGitStatus(currentRepoPath)
+  );
+  vscode.workspace.onDidSaveTextDocument(() => checkGitStatus(currentRepoPath));
+  vscode.workspace.onDidCreateFiles(() => checkGitStatus(currentRepoPath));
+  vscode.workspace.onDidDeleteFiles(() => checkGitStatus(currentRepoPath));
+  vscode.workspace.onDidRenameFiles(() => checkGitStatus(currentRepoPath));
+
   context.subscriptions.push(disposable);
   context.subscriptions.push(statusBar);
 
