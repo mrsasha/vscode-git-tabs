@@ -3,7 +3,10 @@ import { workspace, ExtensionContext, StatusBarAlignment } from "vscode";
 import path = require("path");
 import simpleGit, { SimpleGit, StatusResult } from "simple-git";
 
-export function activate(context: vscode.ExtensionContext) {  
+let statusBar: vscode.StatusBarItem;
+let currentRepoPath: string | undefined;
+
+export function activate(context: vscode.ExtensionContext) {
   // Workspace not using a folder. No access to git repo.
   if (!workspace.rootPath) {
     return;
@@ -11,21 +14,58 @@ export function activate(context: vscode.ExtensionContext) {
 
   const workspaceRoot = workspace.rootPath;
   let disposable = vscode.commands.registerCommand("git-tabs.showgit", () => {
-    // Display a message box to the user
-    vscode.window.showErrorMessage(
-      `Hello World from git-tabs, using root: ${workspaceRoot}!`
+    vscode.window.showInformationMessage(
+      `Howdy from git-tabs, using root: ${workspaceRoot}!`
     );
   });
 
-  context.subscriptions.push(disposable);
+  statusBar = createStatusBar();
 
-  lookupRepo(context, workspaceRoot);
+  context.subscriptions.push(disposable);
+  context.subscriptions.push(statusBar);
+
+  lookupRepo(workspaceRoot);
 }
 
 // this method is called when your extension is deactivated
 export function deactivate() {}
 
-function lookupRepo(context: ExtensionContext, repoDir: string) {
+function createStatusBar() {
+  let sb = vscode.window.createStatusBarItem(
+    vscode.StatusBarAlignment.Left,
+    -1
+  );
+  sb.text = "";
+  return sb;
+}
+
+function checkGitStatus(repoDir: string | undefined) {
+  console.log(`Checking status for: ${repoDir}`);
+  if (repoDir === undefined) return;
+
+  const status = simpleGit(repoDir)
+    .status()
+    .then((statusResult: StatusResult) => {
+      console.log(`Got git status: ${JSON.stringify(statusResult)}`);
+      showStatusInStatusBar(statusResult, repoDir);
+    })
+    .catch((err) => {
+      console.error(`Error getting git status: ${err}`);
+    });
+}
+
+function showStatusInStatusBar(statusResult: StatusResult, repoDir: string) {
+  console.log(
+    `Modified: ${statusResult.modified.length}, Not added: ${statusResult.not_added}`
+  );
+
+  if (statusBar) {
+    statusBar.text = `Git branch: ${statusResult.current} -- CHG: ${statusResult.modified.length}, ADD: ${statusResult.not_added.length}, DEL: ${statusResult.deleted.length}`;
+    statusBar.show();
+  }
+}
+
+function lookupRepo(repoDir: string) {
   const repoPath = path.join(repoDir, ".git");
   const fs = require("fs");
 
@@ -34,33 +74,14 @@ function lookupRepo(context: ExtensionContext, repoDir: string) {
       // No access to git repo or no repo, try to go up.
       const parentDir = path.dirname(repoDir);
       if (parentDir != repoDir) {
-        lookupRepo(context, parentDir);
+        lookupRepo(parentDir);
+      } else {
+        currentRepoPath = undefined;
       }
     } else {
-      const git: SimpleGit = simpleGit(repoDir);
-
-      const status = git
-        .status()
-        .then((statusResult: StatusResult) => {
-			checkStatus(statusResult);
-        })
-        .catch((err) => {
-          console.error(`Error getting git status: ${err}`);
-        });
+      console.log(`Setting currentRepoPath to: ${repoDir}`);
+      currentRepoPath = repoDir;
+      checkGitStatus(currentRepoPath);
     }
   });
-
-  function checkStatus(statusResult: StatusResult) {
-    console.log(`Got git status: ${JSON.stringify(statusResult)}`);
-    const modified = statusResult.modified;
-    console.log(
-      `Modified files: ${JSON.stringify(modified)}, number: ${modified.length}`
-    );
-
-    const statusBar = vscode.window.createStatusBarItem(
-      StatusBarAlignment.Left
-    );
-    statusBar.text = `modified files in ${repoDir}: ${modified.length}`;
-    statusBar.show();
-  }
 }
