@@ -57,7 +57,9 @@ function createStatusBar() {
 }
 
 function checkGitStatus(repoDir: string | undefined, updateTabs?: boolean) {
-  if (repoDir === undefined) return;
+  if (repoDir === undefined) {
+    return;
+  }
 
   const status = simpleGit(repoDir)
     .status()
@@ -116,7 +118,7 @@ function lookupRepo(repoDir: string) {
     if (err) {
       // No access to git repo or no repo, try to go up.
       const parentDir = path.dirname(repoDir);
-      if (parentDir != repoDir) {
+      if (parentDir !== repoDir) {
         lookupRepo(parentDir);
       } else {
         currentRepoPath = undefined;
