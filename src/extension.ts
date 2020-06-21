@@ -2,7 +2,7 @@ import * as vscode from "vscode";
 import { workspace, ExtensionContext, StatusBarAlignment } from "vscode";
 import path = require("path");
 import simpleGit, { SimpleGit, StatusResult } from "simple-git";
-import { getColor } from "./settings";
+import { getColor, setTabColor } from "./settings";
 import { getFileStatus } from "./fileops";
 
 let statusBar: vscode.StatusBarItem;
@@ -99,7 +99,8 @@ async function updateEditorTabs(statusResult: StatusResult) {
   console.log(
     `updateEditorTabs file: ${openFilePath}, status: ${fileStatus}, color should be: ${colorForFile}`
   );
-  //TODO change colors in config
+
+  setTabColor(colorForFile);
 }
 
 function lookupRepo(repoDir: string) {

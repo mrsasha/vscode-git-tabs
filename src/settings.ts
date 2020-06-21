@@ -6,6 +6,7 @@ type ColorCustomization = { [key: string]: string | undefined } | undefined;
 const COLOR_CUSTOMIZATIONS = "colorCustomizations";
 
 const defaultFileColor = "#FFFFFF";
+const defaultBackgroundFileColor = "#000000";
 const defaultAddedFileColor = "#6FC2E9";
 const defaultConflictingFileColor = "#E51400";
 const defaultDeletedFileColor = "68217A";
@@ -59,3 +60,28 @@ export function getColor(fileStatus: FileSCMStatus): string {
   }
 }
 
+export async function setTabColor(color: string) {
+  const colorInverted = invertHex(color);
+  const settings = vscode.workspace.getConfiguration("workbench");
+  const currentColorCustomization: ColorCustomization =
+    settings.get(COLOR_CUSTOMIZATIONS) || {};
+
+  const colorCustomization: ColorCustomization = {
+    ...currentColorCustomization,
+    "tab.activeForeground": color,
+    "tab.activeBorder": color,
+    "tab.unfocusedActiveForeground": defaultFileColor,
+    "tab.activeBackground": defaultBackgroundFileColor,
+    "statusBar.background": color,
+    "statusBar.foreground": invertHex(color),
+  };
+
+  const hasItems = Object.keys(colorCustomization).filter(
+    (x) => !!colorCustomization[x]
+  ).length;
+  settings.update(
+    COLOR_CUSTOMIZATIONS,
+    hasItems ? colorCustomization : undefined,
+    vscode.ConfigurationTarget.Workspace
+  );
+}

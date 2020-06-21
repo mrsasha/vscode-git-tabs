@@ -14,7 +14,7 @@ export function getFileStatus(
   statusResult: StatusResult
 ): FileSCMStatus {
   if (statusResult.created.includes(filePath)) {
-    return FileSCMStatus.UNTRACKED;
+    return FileSCMStatus.ADDED;
   } else if (statusResult.conflicted.includes(filePath)) {
     return FileSCMStatus.CONFLICTING;
   } else if (statusResult.deleted.includes(filePath)) {
