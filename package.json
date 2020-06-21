@@ -4,6 +4,7 @@
   "description": "Tabs that show your git status",
   "version": "0.0.1",
   "publisher": "sasa-sekulic",
+  "repository": "https://github.com/mrsasha/vscode-git-tabs",
   "engines": {
     "vscode": "^1.46.0"
   },
