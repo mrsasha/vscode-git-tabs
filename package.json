@@ -1,7 +1,7 @@
 {
   "name": "git-tabs",
-  "displayName": "git-tabs",
-  "description": "Tabs that show your git status",
+  "displayName": "Git Tabs",
+  "description": "Tabs that show your file git status",
   "version": "0.0.1",
   "publisher": "sasa-sekulic",
   "repository": "https://github.com/mrsasha/vscode-git-tabs",
@@ -19,7 +19,7 @@
     "commands": [
       {
         "command": "git-tabs.showgit",
-        "title": "Show git info in tabs"
+        "title": "Show file git status in tabs"
       }
     ]
   },
