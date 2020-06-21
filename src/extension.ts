@@ -27,19 +27,16 @@ export function activate(context: vscode.ExtensionContext) {
 
   //events
   let disposableChangeConfig = vscode.workspace.onDidChangeConfiguration(() => {
-    console.log(`onDidChangeConfiguration`);
     checkGitStatus(currentRepoPath, true);
   });
   context.subscriptions.push(disposableChangeConfig);
 
   let disposableChangeText = vscode.workspace.onDidChangeTextDocument(() => {
-    console.log(`onDidChangeTextDocument`);
     checkGitStatus(currentRepoPath, true);
   });
   context.subscriptions.push(disposableChangeText);
 
   let disposableChangeEditor = vscode.window.onDidChangeActiveTextEditor(() => {
-    console.log(`onDidChangeActiveTextEditor`);
     checkGitStatus(currentRepoPath, true);
   });
   context.subscriptions.push(disposableChangeEditor);
