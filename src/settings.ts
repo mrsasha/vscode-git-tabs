@@ -1,11 +1,10 @@
 import * as vscode from "vscode";
 import { FileSCMStatus } from "./fileops";
 
+export const defaultFileColor = "#FFFFFF";
+
 type ColorCustomization = { [key: string]: string | undefined } | undefined;
-
 const COLOR_CUSTOMIZATIONS = "colorCustomizations";
-
-const defaultFileColor = "#FFFFFF";
 const defaultBackgroundFileColor = "#000000";
 const defaultAddedFileColor = "#6FC2E9";
 const defaultConflictingFileColor = "#E51400";

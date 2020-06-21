@@ -2,7 +2,7 @@ import * as vscode from "vscode";
 import { workspace, ExtensionContext, StatusBarAlignment } from "vscode";
 import path = require("path");
 import simpleGit, { SimpleGit, StatusResult } from "simple-git";
-import { getColor, setTabColor } from "./settings";
+import { getColor, setTabColor, defaultFileColor } from "./settings";
 import { getFileStatus } from "./fileops";
 
 let statusBar: vscode.StatusBarItem;
@@ -62,7 +62,7 @@ function checkGitStatus(repoDir: string | undefined, updateTabs?: boolean) {
   const status = simpleGit(repoDir)
     .status()
     .then((statusResult: StatusResult) => {
-      console.log(`Got git status: ${JSON.stringify(statusResult)}`);
+      //   console.log(`Got git status: ${JSON.stringify(statusResult)}`);
       showStatusInStatusBar(statusResult);
 
       if (updateTabs) {
@@ -88,10 +88,11 @@ function showStatusInStatusBar(statusResult: StatusResult) {
 }
 
 async function updateEditorTabs(statusResult: StatusResult) {
-  console.log(`Updating editor tabs`);
-
   const editor = vscode.window.activeTextEditor;
-  if (!editor) return;
+  if (!editor) {
+    setTabColor(defaultFileColor);
+    return;
+  }
 
   const openFilePath = vscode.workspace.asRelativePath(
     editor.document.fileName
@@ -100,16 +101,14 @@ async function updateEditorTabs(statusResult: StatusResult) {
   const fileStatus = getFileStatus(openFilePath, statusResult);
   const colorForFile = getColor(fileStatus);
 
-  console.log(
-    `updateEditorTabs file: ${openFilePath}, status: ${fileStatus}, color should be: ${colorForFile}`
-  );
+  //   console.log(
+  //     `updateEditorTabs file: ${openFilePath}, status: ${fileStatus}, color should be: ${colorForFile}`
+  //   );
 
   setTabColor(colorForFile);
 }
 
 function lookupRepo(repoDir: string) {
-  console.log(`lookupRepo for ${repoDir}`);
-
   const repoPath = path.join(repoDir, ".git");
   const fs = require("fs");
 
