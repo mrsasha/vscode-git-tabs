@@ -75,10 +75,14 @@ function checkGitStatus(repoDir: string | undefined, updateTabs?: boolean) {
 }
 
 function showStatusInStatusBar(statusResult: StatusResult) {
-  console.log(`Updating status bar`);
-
   if (statusBar) {
-    statusBar.text = `Git branch: ${statusResult.current} -- CHG: ${statusResult.modified.length}, ADD: ${statusResult.not_added.length}, DEL: ${statusResult.deleted.length}`;
+    const modified = statusResult.modified.length;
+    const added = statusResult.created.length;
+    const untracked = statusResult.not_added.length;
+    const deleted = statusResult.deleted.length;
+    const renamed = statusResult.renamed.length;
+    const conflicted = statusResult.conflicted.length;
+    statusBar.text = `Git branch: ${statusResult.current} -- NEW: ${untracked}, CHG: ${modified}, ADD: ${added}, DEL: ${deleted}, REN: ${renamed}, CFL: ${conflicted}`;
     statusBar.show();
   }
 }
